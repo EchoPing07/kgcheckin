@@ -18,14 +18,14 @@ function log(level, msg) {
   console.log(`[${ts}] [${level}] ${msg}`);
 }
 
-export const logInfo  = (msg) => log('INFO', msg);
-export const logWarn  = (msg) => log('WARN', msg);
-export const logError = (msg) => log('ERROR', msg);
-export const logSuccess = (msg) => log('SUCCESS', msg);
+const logInfo  = (msg) => log('INFO', msg);
+const logWarn  = (msg) => log('WARN', msg);
+const logError = (msg) => log('ERROR', msg);
+const logSuccess = (msg) => log('SUCCESS', msg);
 
 // ---- 延时 ----
 
-export function delay(ms) {
+function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -37,7 +37,7 @@ export function delay(ms) {
  * @param {string} envValue
  * @returns {Array<{userid: string, token: string}>}
  */
-export function parseKgCookie(envValue) {
+function parseKgCookie(envValue) {
   if (!envValue || !envValue.trim()) {
     throw new Error('KUGOU_CK 环境变量未配置或为空');
   }
@@ -58,7 +58,7 @@ function sanitizeString(value) {
     .replace(/(?<!\d)(1[3-9]\d{9})(?!\d)/g, (phone) => `${phone.slice(0, 2)}*******${phone.slice(-2)}`);
 }
 
-export function maskDisplayName(value) {
+function maskDisplayName(value) {
   const text = String(value ?? '');
   const chars = Array.from(text);
   if (chars.length === 0) return '';
@@ -67,7 +67,7 @@ export function maskDisplayName(value) {
   return `${chars.slice(0, 2).join('')}********${chars[chars.length - 1]}`;
 }
 
-export function maskIdentifier(value) {
+function maskIdentifier(value) {
   const text = String(value ?? '');
   const chars = Array.from(text);
   if (chars.length === 0) return '';
@@ -85,7 +85,7 @@ function redactValue(key, value) {
   return value;
 }
 
-export function sanitizeForLog(value, depth = 0) {
+function sanitizeForLog(value, depth = 0) {
   if (value == null) return value;
   if (typeof value !== 'object') return typeof value === 'string' ? sanitizeString(value) : value;
   if (depth >= 4) return '[Object]';
@@ -95,7 +95,7 @@ export function sanitizeForLog(value, depth = 0) {
   );
 }
 
-export function summarizeResponse(response) {
+function summarizeResponse(response) {
   const safe = sanitizeForLog(response);
   if (!safe || typeof safe !== 'object') return safe;
 
@@ -111,3 +111,8 @@ export function summarizeResponse(response) {
   }
   return Object.keys(summary).length > 0 ? summary : safe;
 }
+
+module.exports = {
+  parseKgCookie, logInfo, logWarn, logError, logSuccess,
+  delay, maskDisplayName, maskIdentifier, sanitizeForLog, summarizeResponse,
+};

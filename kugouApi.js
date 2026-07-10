@@ -1,9 +1,6 @@
 // ============================================================
 // 酷狗 API 封装层 —— 直接调用模块函数，不经过 HTTP/Express
 // ============================================================
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
 
 // 设置概念版标识（影响签名密钥、appid、RSA 公钥等）
 // 用户配置 KG_PLATFORM=lite，桥接到内部 process.env.platform 供 API 模块读取
@@ -44,7 +41,7 @@ async function callModule(modFn, cookie) {
  * 获取用户信息（验证 token 有效性）
  * @param {{userid: string, token: string}} cookie
  */
-export function getUserDetail(cookie) {
+function getUserDetail(cookie) {
   return callModule(userDetailMod, cookie);
 }
 
@@ -52,7 +49,7 @@ export function getUserDetail(cookie) {
  * 刷新登录 token
  * @param {{userid: string, token: string}} cookie
  */
-export function refreshToken(cookie) {
+function refreshToken(cookie) {
   return callModule(loginTokenMod, cookie);
 }
 
@@ -60,7 +57,7 @@ export function refreshToken(cookie) {
  * 听歌领取 VIP
  * @param {{userid: string, token: string}} cookie
  */
-export function listenSong(cookie) {
+function listenSong(cookie) {
   return callModule(listenSongMod, cookie);
 }
 
@@ -68,7 +65,7 @@ export function listenSong(cookie) {
  * 看广告领取 VIP
  * @param {{userid: string, token: string}} cookie
  */
-export function watchAd(cookie) {
+function watchAd(cookie) {
   return callModule(vipMod, cookie);
 }
 
@@ -76,6 +73,8 @@ export function watchAd(cookie) {
  * 获取 VIP 到期信息
  * @param {{userid: string, token: string}} cookie
  */
-export function getVipDetail(cookie) {
+function getVipDetail(cookie) {
   return callModule(vipDetailMod, cookie);
 }
+
+module.exports = { getUserDetail, refreshToken, listenSong, watchAd, getVipDetail };

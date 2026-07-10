@@ -2,6 +2,8 @@
 // 青龙面板 OpenAPI 交互 —— token 回写 + 通知推送
 // ============================================================
 
+const { execSync } = require('child_process');
+
 const QL_URL    = (process.env.QL_URL || 'http://127.0.0.1:5700').replace(/\/$/, '');
 const CLIENT_ID = process.env.QL_CLIENT_ID;
 const SECRET    = process.env.QL_CLIENT_SECRET;
@@ -45,7 +47,7 @@ async function getQlToken() {
  * @param {string} envName  变量名（如 "KUGOU_CK"）
  * @returns {Promise<{id: number, name: string, value: string, remarks: string}|null>}
  */
-export async function searchEnv(envName) {
+async function searchEnv(envName) {
   try {
     const token = await getQlToken();
     const data = await qlFetch(`/open/envs?searchValue=${encodeURIComponent(envName)}`, {
@@ -67,7 +69,7 @@ export async function searchEnv(envName) {
  * @param {string} value  新值
  * @param {string} remarks 备注
  */
-export async function updateEnv(id, name, value, remarks = '') {
+async function updateEnv(id, name, value, remarks = '') {
   const token = await getQlToken();
   const data = await qlFetch('/open/envs', {
     method: 'PUT',
@@ -85,10 +87,9 @@ export async function updateEnv(id, name, value, remarks = '') {
  * @param {string} title   通知标题
  * @param {string} content 通知内容
  */
-export async function sendNotify(title, content) {
+async function sendNotify(title, content) {
   // 方式 1: 调用青龙内置 notify 脚本
   try {
-    const { execSync } = await import('child_process');
     const qlDir = process.env.QL_DIR || '/ql';
     execSync(
       `bash "${qlDir}/data/scripts/sendNotify" "${title.replace(/"/g, '\\"')}" "${content.replace(/"/g, '\\"')}"`,
@@ -100,3 +101,5 @@ export async function sendNotify(title, content) {
   // 方式 2: 通过 OpenAPI（需要额外配置通知渠道，此处仅记录日志）
   console.log(`[NOTIFY] ${title}\n${content}`);
 }
+
+module.exports = { searchEnv, updateEnv, sendNotify };

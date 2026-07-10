@@ -1,14 +1,14 @@
 // ============================================================
 // 酷狗概念 VIP 每日签到 —— 青龙面板入口脚本
 // ============================================================
-import {
+const {
   parseKgCookie, logInfo, logWarn, logError, logSuccess,
   delay, maskDisplayName, maskIdentifier, summarizeResponse,
-} from './utils.js';
-import {
+} = require('./utils');
+const {
   getUserDetail, refreshToken, listenSong, watchAd, getVipDetail,
-} from './kugouApi.js';
-import { searchEnv, updateEnv, sendNotify } from './qlApi.js';
+} = require('./kugouApi');
+const { searchEnv, updateEnv, sendNotify } = require('./qlApi');
 
 async function main() {
   logInfo('========== 酷狗概念 VIP 每日签到 ==========');
