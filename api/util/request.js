@@ -2,7 +2,7 @@ const axios = require('axios');
 const { cryptoMd5 } = require('./crypto');
 const { signKey, signatureAndroidParams, signatureRegisterParams, signatureWebParams } = require('./helper');
 const { parseCookieString } = require('./util');
-const { appid, clientver, liteAppid, liteClientver } = require('./config.json');
+const { appid, clientver, liteAppid, liteClientver } = require('./config');
 const { resolveProxy } = require('./runtime');
 
 /**

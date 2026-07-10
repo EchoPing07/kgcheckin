@@ -1,5 +1,5 @@
 const { cryptoMd5 } = require('./crypto');
-const { appid: useAppid, liteAppid, clientver: useClientver, liteClientver } = require('./config.json');
+const { appid: useAppid, liteAppid, clientver: useClientver, liteClientver } = require('./config');
 
 /**
  * web版本 signature 加密

@@ -19,6 +19,7 @@ async function main() {
 
   const now = new Date();
   const isSunday = now.getDay() === 0;
+  const canWriteBack = !!(process.env.QL_CLIENT_ID && process.env.QL_CLIENT_SECRET);
   const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   let tokenChanged = false;
@@ -46,13 +47,14 @@ async function main() {
     const nickname = maskDisplayName(userDetail.data.nickname);
     logInfo(`${tag} [${nickname}] 开始签到`);
 
-    // 2. 周日刷新 token
-    if (isSunday) {
+    // 2. 周日刷新 token（仅在配置了 OpenAPI 凭证时执行，避免刷新后无法回写导致旧 token 失效）
+    if (isSunday && canWriteBack) {
       logInfo(`${tag} 刷新 token...`);
       const refreshResult = await refreshToken(cookie);
       if (refreshResult?.status == 1 && refreshResult?.data?.token) {
         if (refreshResult.data.token !== user.token) {
           user.token = refreshResult.data.token;
+          cookie.token = user.token;
           tokenChanged = true;
           logSuccess(`${tag} token 已刷新`);
         } else {
@@ -60,8 +62,9 @@ async function main() {
         }
       } else {
         logWarn(`${tag} token 刷新失败，继续使用旧 token`);
-        // 即使刷新失败，也把原账号加入列表以保持不丢失
       }
+    } else if (isSunday && !canWriteBack) {
+      logInfo(`${tag} 跳过 token 刷新（未配置 QL_CLIENT_ID / QL_CLIENT_SECRET，无法回写新 token）`);
     }
 
     // 3. 听歌领 VIP
@@ -109,16 +112,26 @@ async function main() {
     logInfo(`${tag} [${nickname}] 签到完成\n`);
   }
 
-  // 6. Token 回写
+  // 6. Token 回写 + 验证
   if (tokenChanged) {
-    logInfo('检测到 token 变更，尝试回写环境变量...');
     const newValue = accounts.map((u) => `${u.userid}#${u.token}`).join('@');
+    logInfo('检测到 token 变更，尝试回写环境变量...');
+    logInfo(`最新 KUGOU_CK: ${newValue}`);
+
+    let writeOk = false;
     try {
       const envItem = await searchEnv('KUGOU_CK');
       if (envItem) {
-        const ok = await updateEnv(envItem.id, 'KUGOU_CK', newValue, envItem.remarks || '');
-        if (ok) {
-          logSuccess('KUGOU_CK 已自动更新');
+        const updated = await updateEnv(envItem.id, 'KUGOU_CK', newValue, envItem.remarks || '');
+        if (updated) {
+          // 回读验证
+          const verify = await searchEnv('KUGOU_CK');
+          if (verify && verify.value === newValue) {
+            logSuccess('KUGOU_CK 已自动更新并验证成功');
+            writeOk = true;
+          } else {
+            logWarn('KUGOU_CK 写回后验证不一致');
+          }
         } else {
           logWarn('KUGOU_CK 更新失败，请检查青龙 OpenAPI 权限');
         }
@@ -126,12 +139,14 @@ async function main() {
         logWarn('未找到 KUGOU_CK 环境变量，无法自动更新');
       }
     } catch (e) {
-      logWarn(`token 自动回写失败: ${e.message}`);
+      logWarn(`token 自动回写异常: ${e.message}`);
+    }
+
+    if (!writeOk) {
       logWarn('请手动更新 KUGOU_CK，否则 token 将在约两个月后过期');
-      // 降级：发送通知提醒
       await sendNotify(
         '酷狗签到 - Token 更新提醒',
-        `Token 已刷新但自动回写失败，请手动更新 KUGOU_CK。\n最新值:\n${newValue}`,
+        `Token 已刷新但自动回写未成功，请手动更新 KUGOU_CK。\n最新值:\n${newValue}`,
       );
     }
   }

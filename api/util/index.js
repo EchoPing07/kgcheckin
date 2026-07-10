@@ -1,4 +1,4 @@
-const { appid, clientver, liteAppid, liteClientver } = require('./config.json');
+const { appid, clientver, liteAppid, liteClientver } = require('./config');
 const {
   cryptoAesDecrypt,
   cryptoAesEncrypt,
@@ -21,6 +21,8 @@ const useClientver = isLite ? liteClientver : clientver;
 module.exports = {
   appid: useAppid,
   clientver: useClientver,
+  liteAppid,
+  liteClientver,
   isLite,
   cryptoAesDecrypt,
   cryptoAesEncrypt,
