@@ -1,5 +1,3 @@
-const pako = require('pako');
-
 /**
  * 随机字符串
  * @param {number} len
@@ -14,12 +12,11 @@ const randomString = (len = 16) => {
     const _tmp = keyStringArr[ceil];
     _key.push(_tmp);
   }
-
   return _key.join('');
 };
 
 /**
- * 格式化cookie
+ * 格式化 cookie
  * @param {string} cookie
  * @returns {string}
  */
@@ -29,9 +26,9 @@ const parseCookieString = (cookie) => {
 };
 
 /**
- * cookie 转 json
+ * cookie 字符串转 json 对象
  * @param {string} cookie
- * @returns
+ * @returns {Record<string, string>}
  */
 const cookieToJson = (cookie) => {
   if (!cookie) return {};
@@ -44,33 +41,7 @@ const cookieToJson = (cookie) => {
   return obj;
 };
 
-/**
- * krc解码
- * @param {string | Uint8Array | Buffer} val
- * @returns {string}
- */
-const decodeLyrics = (val) => {
-  let bytes = null;
-  if (val instanceof Uint8Array) bytes = val;
-  if (Buffer.isBuffer(val)) bytes = new Uint8Array(val);
-  if (typeof val === 'string') bytes = new Uint8Array(Buffer.from(val, 'base64'));
-  if (bytes === null) return '';
-  const enKey = [64, 71, 97, 119, 94, 50, 116, 71, 81, 54, 49, 45, 206, 210, 110, 105];
-  const krcBytes = bytes.slice(4);
-  const len = krcBytes.byteLength;
-  for (let index = 0; index < len; index += 1) {
-    krcBytes[index] = krcBytes[index] ^ enKey[index % enKey.length];
-  }
-  try {
-    const inflate = pako.inflate(krcBytes);
-    return Buffer.from(inflate).toString('utf8');
-  } catch {
-    return '';
-  }
-};
-
 module.exports = {
-  decodeLyrics,
   cookieToJson,
   parseCookieString,
   randomString,

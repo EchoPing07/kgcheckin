@@ -1,12 +1,11 @@
 {
   "name": "kgcheckin",
+  "version": "2.0.0",
   "type": "module",
+  "description": "酷狗概念 VIP 每日自动签到（青龙面板版）",
   "scripts": {
-    "main": "node main.js",
-    "install": "cd api && npm ci",
-    "apiService": "cd api && npm run start",
-    "phoneLogin": "node phoneLogin.js",
-    "sent": "node sent.js",
-    "qrcodeLogin": "node qrcodeLogin.js"
-  }
+    "start": "node kgcheckin.js",
+    "install": "cd api && npm install"
+  },
+  "dependencies": {}
 }
