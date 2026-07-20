@@ -31,13 +31,16 @@ module.exports = (params, useAxios) => {
 
   return new Promise((resolve, reject) => {
     useAxios({
-      baseURL: 'http://login.user.kugou.com',
+      // 不设 baseURL，走默认网关 https://gateway.kugou.com
+      // login.user.kugou.com 是多级子域，*.kugou.com 通配符证书不覆盖
+      // 通过 x-router 头由网关路由到 login 后端服务，与其他模块保持一致
       url: `/${isLite ? 'v4' : 'v5'}/login_by_token`,
       method: 'POST',
       data: dataMap,
       cookie: params?.cookie,
       encryptType: 'android',
       headers: { 'x-router': 'login.user.kugou.com' },
+      maxRedirects: 0,
     })
       .then((res) => {
         const { body } = res;

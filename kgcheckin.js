@@ -36,7 +36,9 @@ async function main() {
     const userDetail = await getUserDetail(cookie);
     if (userDetail?.data?.nickname == null) {
       const safeId = maskIdentifier(user.userid);
-      logError(`${tag} token 过期或账号不存在, userid: ${safeId}`);
+      const errCode = userDetail?.error_code || userDetail?.data?.error_code;
+      logError(`${tag} token 过期或账号不存在, userid: ${safeId}${errCode ? `, error_code: ${errCode}` : ''}`);
+      logError(`${tag} 请重新抓包获取 token 并更新 KUGOU_CK 环境变量`);
       errors[`${tag}(${safeId})`] = {
         msg: 'token 过期或账号不存在',
         detail: summarizeResponse(userDetail),
@@ -58,10 +60,15 @@ async function main() {
           tokenChanged = true;
           logSuccess(`${tag} token 已刷新`);
         } else {
-          logInfo(`${tag} token 无需刷新`);
+          // 刷新接口返回了相同的 token，说明服务端未签发新 token
+          // 可能原因：HTTP→HTTPS 重定向导致 POST body 丢失、token 接近最大有效期、服务端策略变更等
+          const hasSecuParams = !!refreshResult.data?.secu_params;
+          logWarn(`${tag} token 刷新返回相同 token，服务端未签发新 token${hasSecuParams ? '' : '（响应未包含 secu_params）'}`);
+          logWarn(`${tag} 当前 token 可能即将过期，建议关注后续签到结果`);
         }
       } else {
         logWarn(`${tag} token 刷新失败，继续使用旧 token`);
+        logWarn(`${tag} 刷新响应: ${JSON.stringify(summarizeResponse(refreshResult))}`);
       }
     } else if (isSunday && !canWriteBack) {
       logInfo(`${tag} 跳过 token 刷新（未配置 QL_CLIENT_ID / QL_CLIENT_SECRET，无法回写新 token）`);

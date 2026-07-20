@@ -100,6 +100,7 @@ const createRequest = (options) => {
       headers: Object.assign({}, options?.headers || {}, headers),
       withCredentials: true,
       responseType: options.responseType,
+      maxRedirects: options?.maxRedirects,
     };
 
     const proxyConfig = resolveProxy();
